@@ -99,7 +99,7 @@ public class SecurityConfig {
 
                                 // CSRF — disable for REST API endpoints (they use JSON, not forms)
                                 .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers("/api/**"))
+                                                .ignoringRequestMatchers("/api/**", "/pois/api/**"))
 
                                 // Authorization rules
                                 .authorizeHttpRequests(auth -> auth

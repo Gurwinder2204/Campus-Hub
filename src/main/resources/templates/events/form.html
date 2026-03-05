@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head}"></head>
+
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card glass-card">
+                    <div class="card-body p-4">
+                        <h3 class="mb-4"><i class="bi bi-calendar-plus me-2"></i>Create Event</h3>
+                        <form th:action="@{/events}" method="post" th:object="${event}">
+                            <div class="mb-3">
+                                <label class="form-label">Event Title</label>
+                                <input type="text" class="form-control" th:field="*{title}"
+                                    placeholder="e.g. Tech Hackathon 2026" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" th:field="*{category}" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="SEMINAR">Seminar</option>
+                                    <option value="WORKSHOP">Workshop</option>
+                                    <option value="CULTURAL">Cultural</option>
+                                    <option value="SPORTS">Sports</option>
+                                    <option value="TECH">Tech</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Date &amp; Time</label>
+                                <input type="datetime-local" class="form-control" th:field="*{eventDate}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Venue</label>
+                                <input type="text" class="form-control" th:field="*{venue}"
+                                    placeholder="e.g. Auditorium, Ground Floor" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Organizer</label>
+                                <input type="text" class="form-control" th:field="*{organizer}"
+                                    placeholder="e.g. Computer Science Dept.">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="4"
+                                    placeholder="Event details..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Create Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer th:replace="~{layout :: footer}"></footer>
+    <script th:replace="~{layout :: scripts}"></script>
+</body>
+
+</html>

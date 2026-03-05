@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: head}"></head>
+
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card glass-card">
+                    <div class="card-body p-4">
+                        <h3 class="mb-4"><i class="bi bi-geo-alt me-2"></i>Add Point of Interest</h3>
+                        <form th:action="@{/pois}" method="post" th:object="${poi}">
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" th:field="*{name}"
+                                    placeholder="e.g. Main Library" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" th:field="*{category}" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="BUILDING">Building</option>
+                                    <option value="LIBRARY">Library</option>
+                                    <option value="LAB">Lab</option>
+                                    <option value="CANTEEN">Canteen</option>
+                                    <option value="HOSTEL">Hostel</option>
+                                    <option value="SPORTS">Sports Facility</option>
+                                    <option value="PARKING">Parking</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"
+                                    placeholder="Describe this location..."></textarea>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Latitude</label>
+                                    <input type="number" step="0.000001" class="form-control" th:field="*{latitude}"
+                                        placeholder="30.7333">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Longitude</label>
+                                    <input type="number" step="0.000001" class="form-control" th:field="*{longitude}"
+                                        placeholder="76.7794">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Floor</label>
+                                <input type="text" class="form-control" th:field="*{floor}"
+                                    placeholder="e.g. Ground Floor, 2nd Floor">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Opening Hours</label>
+                                <input type="text" class="form-control" th:field="*{openingHours}"
+                                    placeholder="e.g. Mon-Fri 9:00 AM - 5:00 PM">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Add POI</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer th:replace="~{layout :: footer}"></footer>
+    <script th:replace="~{layout :: scripts}"></script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{layout :: head}"></head>
+
+<body>
+    <nav th:replace="~{layout :: navbar}"></nav>
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-calendar-event me-2"></i>Campus Events</h2>
+            <div>
+                <a th:href="@{/events}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == null} ? 'active' : ''">All</a>
+                <a th:href="@{/events(category='SEMINAR')}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == 'SEMINAR'} ? 'active' : ''">Seminar</a>
+                <a th:href="@{/events(category='WORKSHOP')}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == 'WORKSHOP'} ? 'active' : ''">Workshop</a>
+                <a th:href="@{/events(category='CULTURAL')}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == 'CULTURAL'} ? 'active' : ''">Cultural</a>
+                <a th:href="@{/events(category='SPORTS')}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == 'SPORTS'} ? 'active' : ''">Sports</a>
+                <a th:href="@{/events(category='TECH')}" class="btn btn-outline-light btn-sm me-1"
+                    th:classappend="${filterCategory == 'TECH'} ? 'active' : ''">Tech</a>
+                <a th:href="@{/events/new}" class="btn btn-primary btn-sm" sec:authorize="hasRole('ADMIN')"><i
+                        class="bi bi-plus-lg me-1"></i>Create Event</a>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(events)}" class="text-center text-muted py-5">
+            <i class="bi bi-calendar-x" style="font-size:3rem"></i>
+            <p class="mt-2">No events scheduled.</p>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4" th:each="event : ${events}">
+                <div class="card glass-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-info" th:text="${event.category}">TECH</span>
+                            <span class="text-muted small"
+                                th:text="${#temporals.format(event.eventDate, 'dd MMM yyyy, hh:mm a')}"></span>
+                        </div>
+                        <h5 class="card-title" th:text="${event.title}">Event Title</h5>
+                        <p class="card-text text-muted small" th:text="${event.description}">Description</p>
+                        <p class="mb-1"><i class="bi bi-geo-alt me-1"></i><span th:text="${event.venue}"></span></p>
+                        <p class="mb-1" th:if="${event.organizer}"><i class="bi bi-person me-1"></i><span
+                                th:text="${event.organizer}"></span></p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="badge bg-primary"><i class="bi bi-people me-1"></i><span
+                                    th:text="${event.rsvpCount}">0</span> RSVPs</span>
+                            <div class="d-flex gap-1">
+                                <form th:action="@{/events/{id}/rsvp(id=${event.id})}" method="post">
+                                    <button class="btn btn-sm btn-outline-success">RSVP</button>
+                                </form>
+                                <form th:action="@{/events/{id}/delete(id=${event.id})}" method="post"
+                                    sec:authorize="hasRole('ADMIN')">
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer th:replace="~{layout :: footer}"></footer>
+    <script th:replace="~{layout :: scripts}"></script>
+</body>
+
+</html>
