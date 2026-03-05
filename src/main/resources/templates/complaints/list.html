@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
 
-<head th:replace="~{layout :: head}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaints - Campus Study Hub</title>
+</head>
 
 <body>
-    <nav th:replace="~{layout :: navbar}"></nav>
-    <div class="container py-4">
+    <div layout:fragment="content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-chat-left-text me-2"></i>Complaints</h2>
-            <a th:href="@{/complaints/new}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Submit
-                Complaint</a>
+            <a th:href="@{/complaints/new}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Submit Complaint</a>
         </div>
 
         <div th:if="${#lists.isEmpty(complaints)}" class="text-center text-muted py-5">
@@ -32,23 +36,25 @@
                         <div th:if="${c.adminResponse}" class="alert alert-info py-2 px-3 small mt-2 mb-2">
                             <strong>Admin:</strong> <span th:text="${c.adminResponse}"></span>
                         </div>
-                        <p class="text-muted small mb-2"><i class="bi bi-person me-1"></i><span
-                                th:text="${c.submittedBy}"></span> · <span
-                                th:text="${#temporals.format(c.createdAt, 'dd MMM yyyy')}"></span></p>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-person me-1"></i><span th:text="${c.submittedBy}"></span>
+                            · <span th:text="${#temporals.format(c.createdAt, 'dd MMM yyyy')}"></span>
+                        </p>
                         <div sec:authorize="hasRole('ADMIN')">
                             <form th:if="${c.status != 'RESOLVED'}" th:action="@{/complaints/{id}/respond(id=${c.id})}"
                                 method="post" class="d-flex gap-2 mb-2">
                                 <input type="text" name="response" class="form-control form-control-sm"
                                     placeholder="Admin response...">
-                                <button class="btn btn-sm btn-outline-primary text-nowrap">Respond</button>
+                                <button type="submit"
+                                    class="btn btn-sm btn-outline-primary text-nowrap">Respond</button>
                             </form>
                             <div class="d-flex gap-1">
                                 <form th:if="${c.status != 'RESOLVED'}"
                                     th:action="@{/complaints/{id}/resolve(id=${c.id})}" method="post">
-                                    <button class="btn btn-sm btn-outline-success">Resolve</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Resolve</button>
                                 </form>
                                 <form th:action="@{/complaints/{id}/delete(id=${c.id})}" method="post">
-                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                 </form>
                             </div>
                         </div>
@@ -57,8 +63,6 @@
             </div>
         </div>
     </div>
-    <footer th:replace="~{layout :: footer}"></footer>
-    <script th:replace="~{layout :: scripts}"></script>
 </body>
 
 </html>

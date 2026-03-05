@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
 
-<head th:replace="~{layout :: head}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Map - Campus Study Hub</title>
+</head>
 
 <body>
-    <nav th:replace="~{layout :: navbar}"></nav>
-    <div class="container py-4">
+    <div layout:fragment="content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-geo-alt me-2"></i>Campus Map — Points of Interest</h2>
             <div>
@@ -19,10 +23,8 @@
                     th:classappend="${filterCategory == 'LAB'} ? 'active' : ''">Labs</a>
                 <a th:href="@{/pois(category='CANTEEN')}" class="btn btn-outline-light btn-sm me-1"
                     th:classappend="${filterCategory == 'CANTEEN'} ? 'active' : ''">Canteen</a>
-                <a th:href="@{/pois(category='HOSTEL')}" class="btn btn-outline-light btn-sm me-1"
-                    th:classappend="${filterCategory == 'HOSTEL'} ? 'active' : ''">Hostel</a>
-                <a th:href="@{/pois/new}" class="btn btn-primary btn-sm" sec:authorize="hasRole('ADMIN')"><i
-                        class="bi bi-plus-lg me-1"></i>Add POI</a>
+                <a th:href="@{/pois/new}" class="btn btn-primary btn-sm" sec:authorize="hasRole('ADMIN')">
+                    <i class="bi bi-plus-lg me-1"></i>Add POI</a>
             </div>
         </div>
 
@@ -37,20 +39,22 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span class="badge bg-info" th:text="${poi.category}">BUILDING</span>
-                            <span class="text-muted small" th:if="${poi.floor}"><i class="bi bi-layers me-1"></i><span
-                                    th:text="${poi.floor}"></span></span>
+                            <span class="text-muted small" th:if="${poi.floor}">
+                                <i class="bi bi-layers me-1"></i><span th:text="${poi.floor}"></span>
+                            </span>
                         </div>
                         <h5 class="card-title" th:text="${poi.name}">POI Name</h5>
                         <p class="card-text text-muted small" th:text="${poi.description}">Description</p>
-                        <p class="mb-1" th:if="${poi.openingHours}"><i class="bi bi-clock me-1"></i><span
-                                th:text="${poi.openingHours}"></span></p>
+                        <p class="mb-1" th:if="${poi.openingHours}">
+                            <i class="bi bi-clock me-1"></i><span th:text="${poi.openingHours}"></span>
+                        </p>
                         <p class="mb-1" th:if="${poi.latitude != null and poi.longitude != null}">
                             <i class="bi bi-pin-map me-1"></i>
                             <span th:text="${poi.latitude}"></span>, <span th:text="${poi.longitude}"></span>
                         </p>
                         <div class="d-flex gap-1 mt-2" sec:authorize="hasRole('ADMIN')">
                             <form th:action="@{/pois/{id}/delete(id=${poi.id})}" method="post">
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -63,8 +67,6 @@
             integration.
         </div>
     </div>
-    <footer th:replace="~{layout :: footer}"></footer>
-    <script th:replace="~{layout :: scripts}"></script>
 </body>
 
 </html>

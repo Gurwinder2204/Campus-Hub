@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
 
-<head th:replace="~{layout :: head}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost &amp; Found - Campus Study Hub</title>
+</head>
 
 <body>
-    <nav th:replace="~{layout :: navbar}"></nav>
-    <div class="container py-4">
+    <div layout:fragment="content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="bi bi-search-heart me-2"></i>Lost &amp; Found</h2>
             <div>
@@ -15,14 +19,14 @@
                     th:classappend="${filterType == 'LOST'} ? 'active' : ''">Lost</a>
                 <a th:href="@{/lost-found(type='FOUND')}" class="btn btn-outline-success btn-sm me-1"
                     th:classappend="${filterType == 'FOUND'} ? 'active' : ''">Found</a>
-                <a th:href="@{/lost-found/new}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Report
-                    Item</a>
+                <a th:href="@{/lost-found/new}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Report Item</a>
             </div>
         </div>
 
         <div th:if="${#lists.isEmpty(items)}" class="text-center text-muted py-5">
             <i class="bi bi-inbox" style="font-size:3rem"></i>
-            <p class="mt-2">No items reported yet.</p>
+            <p class="mt-2">No items reported yet. Click "Report Item" to add one.</p>
         </div>
 
         <div class="row g-3">
@@ -38,20 +42,23 @@
                         </div>
                         <h5 class="card-title" th:text="${item.title}">Item Title</h5>
                         <p class="card-text text-muted small" th:text="${item.description}">Description</p>
-                        <p class="mb-1" th:if="${item.location}"><i class="bi bi-geo-alt me-1"></i><span
-                                th:text="${item.location}"></span></p>
-                        <p class="mb-1" th:if="${item.contactInfo}"><i class="bi bi-telephone me-1"></i><span
-                                th:text="${item.contactInfo}"></span></p>
-                        <p class="text-muted small mb-2"><i class="bi bi-person me-1"></i><span
-                                th:text="${item.postedBy}"></span> · <span
-                                th:text="${#temporals.format(item.createdAt, 'dd MMM yyyy')}"></span></p>
+                        <p class="mb-1" th:if="${item.location}">
+                            <i class="bi bi-geo-alt me-1"></i><span th:text="${item.location}"></span>
+                        </p>
+                        <p class="mb-1" th:if="${item.contactInfo}">
+                            <i class="bi bi-telephone me-1"></i><span th:text="${item.contactInfo}"></span>
+                        </p>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-person me-1"></i><span th:text="${item.postedBy}"></span>
+                            · <span th:text="${#temporals.format(item.createdAt, 'dd MMM yyyy')}"></span>
+                        </p>
                         <div class="d-flex gap-1" sec:authorize="hasRole('ADMIN')">
                             <form th:if="${item.status == 'OPEN'}"
                                 th:action="@{/lost-found/{id}/resolve(id=${item.id})}" method="post">
-                                <button class="btn btn-sm btn-outline-success">Mark Resolved</button>
+                                <button type="submit" class="btn btn-sm btn-outline-success">Mark Resolved</button>
                             </form>
                             <form th:action="@{/lost-found/{id}/delete(id=${item.id})}" method="post">
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                             </form>
                         </div>
                     </div>
@@ -59,8 +66,6 @@
             </div>
         </div>
     </div>
-    <footer th:replace="~{layout :: footer}"></footer>
-    <script th:replace="~{layout :: scripts}"></script>
 </body>
 
 </html>

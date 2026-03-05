@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
 
-<head th:replace="~{layout :: head}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - Campus Study Hub</title>
+</head>
 
 <body>
-    <nav th:replace="~{layout :: navbar}"></nav>
-    <div class="container py-4">
+    <div layout:fragment="content">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="card glass-card">
@@ -15,11 +19,11 @@
                             <div class="mb-3">
                                 <label class="form-label">Event Title</label>
                                 <input type="text" class="form-control" th:field="*{title}"
-                                    placeholder="e.g. Tech Hackathon 2026" required>
+                                    placeholder="e.g. Tech Hackathon 2026" required="required">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Category</label>
-                                <select class="form-select" th:field="*{category}" required>
+                                <select class="form-select" th:field="*{category}" required="required">
                                     <option value="">-- Select --</option>
                                     <option value="SEMINAR">Seminar</option>
                                     <option value="WORKSHOP">Workshop</option>
@@ -30,12 +34,13 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Date &amp; Time</label>
-                                <input type="datetime-local" class="form-control" th:field="*{eventDate}" required>
+                                <input type="datetime-local" class="form-control" th:field="*{eventDate}"
+                                    required="required">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Venue</label>
                                 <input type="text" class="form-control" th:field="*{venue}"
-                                    placeholder="e.g. Auditorium, Ground Floor" required>
+                                    placeholder="e.g. Auditorium, Ground Floor" required="required">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Organizer</label>
@@ -54,8 +59,6 @@
             </div>
         </div>
     </div>
-    <footer th:replace="~{layout :: footer}"></footer>
-    <script th:replace="~{layout :: scripts}"></script>
 </body>
 
 </html>

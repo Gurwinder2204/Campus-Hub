@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
 
-<head th:replace="~{layout :: head}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Item - Campus Study Hub</title>
+</head>
 
 <body>
-    <nav th:replace="~{layout :: navbar}"></nav>
-    <div class="container py-4">
+    <div layout:fragment="content">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
                 <div class="card glass-card">
@@ -14,7 +18,7 @@
                         <form th:action="@{/lost-found}" method="post" th:object="${item}">
                             <div class="mb-3">
                                 <label class="form-label">Type</label>
-                                <select class="form-select" th:field="*{type}" required>
+                                <select class="form-select" th:field="*{type}" required="required">
                                     <option value="">-- Select --</option>
                                     <option value="LOST">I Lost Something</option>
                                     <option value="FOUND">I Found Something</option>
@@ -23,7 +27,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Title</label>
                                 <input type="text" class="form-control" th:field="*{title}"
-                                    placeholder="e.g. Blue backpack, Student ID card" required>
+                                    placeholder="e.g. Blue backpack, Student ID card" required="required">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Description</label>
@@ -47,8 +51,6 @@
             </div>
         </div>
     </div>
-    <footer th:replace="~{layout :: footer}"></footer>
-    <script th:replace="~{layout :: scripts}"></script>
 </body>
 
 </html>
