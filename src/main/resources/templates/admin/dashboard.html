@@ -23,6 +23,7 @@
 
         .navbar {
             background: rgba(22, 33, 62, 0.95) !important;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -105,32 +106,35 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" aria-label="Main navigation">
         <div class="container">
             <a class="navbar-brand" th:href="@{/dashboard}">
-                <i class="bi bi-book-half me-2"></i>Campus Study Hub
+                <i class="bi bi-book-half me-2" aria-hidden="true"></i>Campus Study Hub
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-house me-1"></i>Dashboard</a>
+                        <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-house me-1"
+                                aria-hidden="true"></i>Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/semesters}"><i class="bi bi-collection me-1"></i>Semesters</a>
+                        <a class="nav-link" th:href="@{/semesters}"><i class="bi bi-collection me-1"
+                                aria-hidden="true"></i>Semesters</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active text-warning" th:href="@{/admin}"><i
-                                class="bi bi-gear me-1"></i>Admin</a>
+                        <a class="nav-link active text-warning" th:href="@{/admin}"><i class="bi bi-gear me-1"
+                                aria-hidden="true"></i>Admin</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <form th:action="@{/logout}" method="post" class="d-inline">
                             <button type="submit" class="btn btn-outline-light btn-sm">
-                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                                <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>Logout
                             </button>
                         </form>
                     </li>
@@ -139,7 +143,7 @@
         </div>
     </nav>
 
-    <main class="main-content">
+    <main class="main-content" role="main" aria-label="Main content">
         <div class="container">
             <h2 class="text-white mb-4">
                 <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
@@ -148,10 +152,10 @@
             <!-- Quick Actions -->
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
-                    <a th:href="@{/admin/subjects}" class="text-decoration-none">
+                    <a th:href="@{/admin/subjects}" class="text-decoration-none" aria-label="Manage subjects">
                         <div class="card text-center h-100">
                             <div class="card-body">
-                                <i class="bi bi-collection display-4 text-primary mb-3"></i>
+                                <i class="bi bi-collection display-4 text-primary mb-3" aria-hidden="true"></i>
                                 <h5 class="text-white">Manage Subjects</h5>
                                 <p class="text-muted mb-0">Create, edit, delete subjects</p>
                             </div>
@@ -159,10 +163,10 @@
                     </a>
                 </div>
                 <div class="col-md-3">
-                    <a th:href="@{/admin/upload/note}" class="text-decoration-none">
+                    <a th:href="@{/admin/upload/note}" class="text-decoration-none" aria-label="Upload note">
                         <div class="card text-center h-100">
                             <div class="card-body">
-                                <i class="bi bi-file-earmark-plus display-4 text-info mb-3"></i>
+                                <i class="bi bi-file-earmark-plus display-4 text-info mb-3" aria-hidden="true"></i>
                                 <h5 class="text-white">Upload Note</h5>
                                 <p class="text-muted mb-0">Add PDF notes</p>
                             </div>
@@ -170,10 +174,10 @@
                     </a>
                 </div>
                 <div class="col-md-3">
-                    <a th:href="@{/admin/upload/paper}" class="text-decoration-none">
+                    <a th:href="@{/admin/upload/paper}" class="text-decoration-none" aria-label="Upload paper">
                         <div class="card text-center h-100">
                             <div class="card-body">
-                                <i class="bi bi-file-earmark-text display-4 text-danger mb-3"></i>
+                                <i class="bi bi-file-earmark-text display-4 text-danger mb-3" aria-hidden="true"></i>
                                 <h5 class="text-white">Upload Paper</h5>
                                 <p class="text-muted mb-0">Add question papers</p>
                             </div>
@@ -181,10 +185,10 @@
                     </a>
                 </div>
                 <div class="col-md-3">
-                    <a th:href="@{/admin/add/video}" class="text-decoration-none">
+                    <a th:href="@{/admin/add/video}" class="text-decoration-none" aria-label="Add video link">
                         <div class="card text-center h-100">
                             <div class="card-body">
-                                <i class="bi bi-youtube display-4 text-success mb-3"></i>
+                                <i class="bi bi-youtube display-4 text-success mb-3" aria-hidden="true"></i>
                                 <h5 class="text-white">Add Video</h5>
                                 <p class="text-muted mb-0">Add YouTube links</p>
                             </div>
@@ -222,8 +226,8 @@
                                     <td><span class="badge badge-videos" th:text="${subject.videosCount}">0</span></td>
                                     <td>
                                         <a th:href="@{/subjects/{id}(id=${subject.id})}"
-                                            class="btn btn-outline-light btn-sm">
-                                            <i class="bi bi-eye"></i>
+                                            class="btn btn-outline-light btn-sm" aria-label="View subject">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
                                         </a>
                                     </td>
                                 </tr>

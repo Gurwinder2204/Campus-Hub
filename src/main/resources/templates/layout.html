@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" 
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle != null} ? ${pageTitle} + ' - Campus Study Hub' : 'Campus Study Hub'">Campus Study Hub</title>
-    
+    <title th:text="${pageTitle != null} ? ${pageTitle} + ' - Campus Study Hub' : 'Campus Study Hub'">Campus Study Hub
+    </title>
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
-    
+
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,50 +19,53 @@
             --dark-bg: #1a1a2e;
             --card-bg: #16213e;
         }
-        
+
         body {
             min-height: 100vh;
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         .navbar {
             background: rgba(22, 33, 62, 0.95) !important;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .navbar-brand {
             font-weight: 700;
             background: var(--primary-gradient);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 1.5rem;
         }
-        
+
         .nav-link {
             color: rgba(255, 255, 255, 0.8) !important;
             transition: all 0.3s ease;
         }
-        
+
         .nav-link:hover {
             color: #667eea !important;
         }
-        
+
         .card {
             background: rgba(22, 33, 62, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
         }
-        
+
         .btn-primary {
             background: var(--primary-gradient);
             border: none;
@@ -70,27 +74,27 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-outline-light {
             border-radius: 25px;
         }
-        
+
         .main-content {
             min-height: calc(100vh - 140px);
             padding: 2rem 0;
         }
-        
+
         footer {
             background: rgba(22, 33, 62, 0.95);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1.5rem 0;
         }
-        
+
         .semester-card {
             background: var(--primary-gradient);
             border-radius: 20px;
@@ -100,18 +104,18 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .semester-card:hover {
             transform: scale(1.05);
             box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
         }
-        
+
         .semester-card h3 {
             font-size: 3rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
-        
+
         .resource-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -120,53 +124,63 @@
             margin-bottom: 1rem;
             transition: all 0.3s ease;
         }
-        
+
         .resource-card:hover {
             background: rgba(255, 255, 255, 0.1);
         }
-        
-        .badge-notes { background: #667eea; }
-        .badge-papers { background: #f5576c; }
-        .badge-videos { background: #00c9a7; }
-        
+
+        .badge-notes {
+            background: #667eea;
+        }
+
+        .badge-papers {
+            background: #f5576c;
+        }
+
+        .badge-videos {
+            background: #00c9a7;
+        }
+
         .alert {
             border-radius: 10px;
         }
-        
-        .form-control, .form-select {
+
+        .form-control,
+        .form-select {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #fff;
             border-radius: 10px;
         }
-        
-        .form-control:focus, .form-select:focus {
+
+        .form-control:focus,
+        .form-select:focus {
             background: rgba(255, 255, 255, 0.15);
             border-color: #667eea;
             color: #fff;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
-        
+
         .form-control::placeholder {
             color: rgba(255, 255, 255, 0.5);
         }
-        
+
         .video-thumbnail {
             border-radius: 10px;
             overflow: hidden;
             position: relative;
         }
-        
+
         .video-thumbnail img {
             width: 100%;
             height: auto;
             transition: transform 0.3s ease;
         }
-        
+
         .video-thumbnail:hover img {
             transform: scale(1.05);
         }
-        
+
         .play-icon {
             position: absolute;
             top: 50%;
@@ -178,29 +192,35 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top" aria-label="Main navigation">
         <div class="container">
             <a class="navbar-brand" th:href="@{/dashboard}">
-                <i class="bi bi-book-half me-2"></i>Campus Study Hub
+                <i class="bi bi-book-half me-2" aria-hidden="true"></i>Campus Study Hub
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto" sec:authorize="isAuthenticated()">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-house me-1"></i>Dashboard</a>
+                        <a class="nav-link" th:href="@{/dashboard}"><i class="bi bi-house me-1"
+                                aria-hidden="true"></i>Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/semesters}"><i class="bi bi-collection me-1"></i>Semesters</a>
+                        <a class="nav-link" th:href="@{/semesters}"><i class="bi bi-collection me-1"
+                                aria-hidden="true"></i>Semesters</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/search}"><i class="bi bi-search me-1"></i>Search</a>
+                        <a class="nav-link" th:href="@{/search}"><i class="bi bi-search me-1"
+                                aria-hidden="true"></i>Search</a>
                     </li>
                     <li class="nav-item" sec:authorize="hasRole('ADMIN')">
-                        <a class="nav-link text-warning" th:href="@{/admin}"><i class="bi bi-gear me-1"></i>Admin</a>
+                        <a class="nav-link text-warning" th:href="@{/admin}"><i class="bi bi-gear me-1"
+                                aria-hidden="true"></i>Admin</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -210,6 +230,16 @@
                     <li class="nav-item" sec:authorize="!isAuthenticated()">
                         <a class="btn btn-primary btn-sm ms-2" th:href="@{/register}">Register</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/new}"><i class="bi bi-calendar-plus me-1"
+                                aria-hidden="true"></i>Book
+                            Room</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/bookings/mine}"><i class="bi bi-clock-history me-1"
+                                aria-hidden="true"></i>My
+                            Bookings</a>
+                    </li>
                     <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle me-1"></i>
@@ -217,9 +247,16 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
                             <li><span class="dropdown-item-text" sec:authorize="hasRole('ADMIN')">
-                                <i class="bi bi-shield-check text-warning me-1"></i>Admin
-                            </span></li>
-                            <li><hr class="dropdown-divider" sec:authorize="hasRole('ADMIN')"></li>
+                                    <i class="bi bi-shield-check text-warning me-1"></i>Admin
+                                </span></li>
+                            <li sec:authorize="hasRole('ADMIN')">
+                                <a class="dropdown-item" th:href="@{/admin/bookings}">
+                                    <i class="bi bi-calendar-check me-1 text-warning"></i>Manage Bookings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form th:action="@{/logout}" method="post" class="d-inline">
                                     <button type="submit" class="dropdown-item">
@@ -235,18 +272,18 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" role="main" aria-label="Main content">
         <div class="container">
             <!-- Flash Messages -->
             <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i>[[${success}]]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-check-circle me-2" aria-hidden="true"></i><span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i>[[${error}]]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i><span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-            
+
             <!-- Page Content -->
             <div th:replace="${content}">
                 <!-- Content will be inserted here -->
@@ -264,4 +301,5 @@
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

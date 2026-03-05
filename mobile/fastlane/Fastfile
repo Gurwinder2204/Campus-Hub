@@ -1,0 +1,36 @@
+# Campus Study Hub — Fastlane Configuration
+# This is a placeholder. Customize lanes for your workflow.
+
+default_platform(:android)
+
+platform :android do
+  desc "Build debug APK"
+  lane :debug do
+    gradle(task: "assembleDebug")
+  end
+
+  desc "Build release APK (requires signing config)"
+  lane :release do
+    gradle(
+      task: "assembleRelease",
+      properties: {
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+      }
+    )
+  end
+end
+
+platform :ios do
+  desc "Build iOS app"
+  lane :build do
+    # Requires Xcode and Apple Developer Account
+    build_app(
+      workspace: "CampusStudyHub.xcworkspace",
+      scheme: "CampusStudyHub",
+      export_method: "ad-hoc"
+    )
+  end
+end

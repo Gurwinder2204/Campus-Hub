@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Room - Campus Study Hub</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0"><i class="fas fa-calendar-plus me-2" aria-hidden="true"></i>Book
+                                a Study Room</h3>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                            <form th:action="@{/bookings/new}" th:object="${bookingRequest}" method="post">
+                                <div class="mb-3">
+                                    <label for="roomId" class="form-label">Select Room</label>
+                                    <select id="roomId" th:field="*{roomId}" class="form-select" required>
+                                        <option value="">-- Choose a room --</option>
+                                        <option th:each="room : ${rooms}" th:value="${room.id}"
+                                            th:text="${room.name + ' (' + room.building + ', Capacity: ' + room.capacity + ')'}">
+                                        </option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('roomId')}"
+                                        th:errors="*{roomId}"></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="startAt" class="form-label">Start Date & Time</label>
+                                        <input type="datetime-local" id="startAt" th:field="*{startAt}"
+                                            class="form-control" required>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('startAt')}"
+                                            th:errors="*{startAt}"></div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="endAt" class="form-label">End Date & Time</label>
+                                        <input type="datetime-local" id="endAt" th:field="*{endAt}" class="form-control"
+                                            required>
+                                        <div class="text-danger" th:if="${#fields.hasErrors('endAt')}"
+                                            th:errors="*{endAt}"></div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="purpose" class="form-label">Purpose of Booking</label>
+                                    <textarea id="purpose" th:field="*{purpose}" class="form-control" rows="3"
+                                        placeholder="e.g. Group study for DBMS exam"></textarea>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('purpose')}"
+                                        th:errors="*{purpose}"></div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <small><i class="fas fa-info-circle me-1" aria-hidden="true"></i> Note: Bookings are
+                                        limited to 4 hours
+                                        and require admin approval.</small>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">Submit Booking Request</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

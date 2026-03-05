@@ -72,4 +72,15 @@ local.properties
 # Debug output files
 debug-output.txt
 spring-run.txt
+build-output.txt
+classpath_debug.txt
+classpath_output.txt
+compile_errors*.txt
+test_output*.txt
+test_results*.txt
 
+# Node modules
+node_modules/
+
+# Build outputs
+builds/

@@ -1,9 +1,11 @@
 package com.campusstudyhub;
 
+import com.campusstudyhub.entity.Room;
 import com.campusstudyhub.entity.Semester;
 import com.campusstudyhub.entity.Subject;
 import com.campusstudyhub.entity.VideoLink;
 import com.campusstudyhub.entity.User;
+import com.campusstudyhub.repository.RoomRepository;
 import com.campusstudyhub.repository.SemesterRepository;
 import com.campusstudyhub.repository.SubjectRepository;
 import com.campusstudyhub.repository.VideoLinkRepository;
@@ -36,6 +38,7 @@ public class DataLoader {
     private final SemesterRepository semesterRepository;
     private final SubjectRepository subjectRepository;
     private final VideoLinkRepository videoLinkRepository;
+    private final RoomRepository roomRepository;
     private final UserService userService;
 
     // Admin configuration from properties
@@ -51,10 +54,12 @@ public class DataLoader {
     public DataLoader(SemesterRepository semesterRepository,
             SubjectRepository subjectRepository,
             VideoLinkRepository videoLinkRepository,
+            RoomRepository roomRepository,
             UserService userService) {
         this.semesterRepository = semesterRepository;
         this.subjectRepository = subjectRepository;
         this.videoLinkRepository = videoLinkRepository;
+        this.roomRepository = roomRepository;
         this.userService = userService;
     }
 
@@ -77,6 +82,14 @@ public class DataLoader {
             log.info("Semesters and subjects seeded successfully!");
         } else {
             log.info("Semesters already exist, skipping seeding.");
+        }
+
+        // Seed rooms if not already present
+        if (roomRepository.count() == 0) {
+            seedRooms();
+            log.info("Rooms seeded successfully!");
+        } else {
+            log.info("Rooms already exist, skipping seeding.");
         }
 
         log.info("Data seeding completed!");
@@ -172,6 +185,20 @@ public class DataLoader {
             videoLinkRepository.save(video);
             log.info("Sample video added for: {}", subject.getName());
         }
+    }
+
+    private void seedRooms() {
+        Room room101 = new Room("Room 101", 30, "Main Block", "1", "101");
+        room101.setResources("{\"projector\":true,\"whiteboard\":true,\"ac\":true}");
+        roomRepository.save(room101);
+
+        Room room102 = new Room("Room 102", 50, "Main Block", "1", "102");
+        room102.setResources("{\"projector\":true,\"whiteboard\":true,\"ac\":true,\"smartBoard\":true}");
+        roomRepository.save(room102);
+
+        Room libraryRoom = new Room("Library Study Room", 10, "Library", "Ground", "LSR-1");
+        libraryRoom.setResources("{\"whiteboard\":true,\"powerOutlets\":8}");
+        roomRepository.save(libraryRoom);
     }
 
     private void addSampleVideoForDBMS(Subject subject) {

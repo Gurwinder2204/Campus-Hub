@@ -34,19 +34,22 @@ public class ResourceService {
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final FileStorageUtil fileStorageUtil;
+    private final AnalyticsService analyticsService;
 
     public ResourceService(NoteRepository noteRepository,
             QuestionPaperRepository questionPaperRepository,
             VideoLinkRepository videoLinkRepository,
             SubjectRepository subjectRepository,
             UserRepository userRepository,
-            FileStorageUtil fileStorageUtil) {
+            FileStorageUtil fileStorageUtil,
+            AnalyticsService analyticsService) {
         this.noteRepository = noteRepository;
         this.questionPaperRepository = questionPaperRepository;
         this.videoLinkRepository = videoLinkRepository;
         this.subjectRepository = subjectRepository;
         this.userRepository = userRepository;
         this.fileStorageUtil = fileStorageUtil;
+        this.analyticsService = analyticsService;
     }
 
     // ============== NOTES ==============
@@ -84,6 +87,11 @@ public class ResourceService {
 
         note = noteRepository.save(note);
         log.info("Note uploaded: {} with ID {}", note.getTitle(), note.getId());
+
+        analyticsService.trackEvent("resource_upload",
+                java.util.Map.of("type", "note", "id", note.getId(), "title", note.getTitle(), "subjectId",
+                        subject.getId()),
+                uploaderEmail);
 
         return toNoteDto(note);
     }
@@ -177,6 +185,11 @@ public class ResourceService {
         paper = questionPaperRepository.save(paper);
         log.info("Paper uploaded: {} with ID {}", paper.getTitle(), paper.getId());
 
+        analyticsService.trackEvent("resource_upload",
+                java.util.Map.of("type", "paper", "id", paper.getId(), "title", paper.getTitle(), "subjectId",
+                        subject.getId()),
+                uploaderEmail);
+
         return toPaperDto(paper);
     }
 
@@ -259,6 +272,11 @@ public class ResourceService {
 
         video = videoLinkRepository.save(video);
         log.info("Video added: {} with ID {}", video.getTitle(), video.getId());
+
+        analyticsService.trackEvent("resource_upload",
+                java.util.Map.of("type", "video", "id", video.getId(), "title", video.getTitle(), "subjectId",
+                        subject.getId()),
+                addedByEmail);
 
         return toVideoDto(video);
     }

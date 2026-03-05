@@ -4,6 +4,8 @@ import com.campusstudyhub.dto.SubjectDto;
 import com.campusstudyhub.entity.Semester;
 import com.campusstudyhub.service.ResourceService;
 import com.campusstudyhub.service.SubjectService;
+import com.campusstudyhub.service.BookingService;
+import com.campusstudyhub.service.StudyTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -26,10 +28,17 @@ public class StudentController {
 
     private final SubjectService subjectService;
     private final ResourceService resourceService;
+    private final BookingService bookingService;
+    private final StudyTaskService taskService;
 
-    public StudentController(SubjectService subjectService, ResourceService resourceService) {
+    public StudentController(SubjectService subjectService,
+            ResourceService resourceService,
+            BookingService bookingService,
+            StudyTaskService taskService) {
         this.subjectService = subjectService;
         this.resourceService = resourceService;
+        this.bookingService = bookingService;
+        this.taskService = taskService;
     }
 
     /**
@@ -37,12 +46,20 @@ public class StudentController {
      */
     @GetMapping("/dashboard")
     public String dashboard(Authentication auth, Model model) {
-        log.debug("Showing dashboard for user: {}", auth.getName());
+        String email = auth.getName();
+        log.debug("Showing dashboard for user: {}", email);
 
         boolean isAdmin = auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
         model.addAttribute("isAdmin", isAdmin);
-        model.addAttribute("userName", auth.getName());
+        model.addAttribute("userName", email);
         model.addAttribute("semesters", subjectService.getAllSemesters());
+
+        // Add booking summary
+        model.addAttribute("myBookingsCount", bookingService.listByUserEmail(email).size());
+
+        // Add task summary
+        model.addAttribute("pendingTasksCount", taskService.countPendingTasks(email));
+        model.addAttribute("activeTasks", taskService.listActiveTasks(email));
 
         return "dashboard";
     }

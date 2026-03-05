@@ -5,6 +5,7 @@ import com.campusstudyhub.dto.SubjectDto;
 import com.campusstudyhub.dto.VideoLinkDto;
 import com.campusstudyhub.service.ResourceService;
 import com.campusstudyhub.service.SubjectService;
+import com.campusstudyhub.service.BookingService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,13 @@ public class AdminController {
 
     private final SubjectService subjectService;
     private final ResourceService resourceService;
+    private final BookingService bookingService;
 
-    public AdminController(SubjectService subjectService, ResourceService resourceService) {
+    public AdminController(SubjectService subjectService, ResourceService resourceService,
+            BookingService bookingService) {
         this.subjectService = subjectService;
         this.resourceService = resourceService;
+        this.bookingService = bookingService;
     }
 
     /**
@@ -306,5 +310,47 @@ public class AdminController {
             return "redirect:/subjects/" + subjectId;
         }
         return "redirect:/admin";
+    }
+    // ============== BOOKING MANAGEMENT ==============
+
+    /**
+     * List pending bookings for approval.
+     */
+    @GetMapping("/bookings")
+    public String listPendingBookings(Model model) {
+        model.addAttribute("bookings", bookingService.listPending());
+        return "admin/bookings";
+    }
+
+    /**
+     * Approve a booking.
+     */
+    @PostMapping("/bookings/{id}/approve")
+    public String approveBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.approveBooking(id);
+            redirectAttributes.addFlashAttribute("success", "Booking approved successfully!");
+        } catch (Exception e) {
+            log.error("Error approving booking", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to approve booking: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings";
+    }
+
+    /**
+     * Reject a booking.
+     */
+    @PostMapping("/bookings/{id}/reject")
+    public String rejectBooking(@PathVariable Long id,
+            @RequestParam(required = false) String reason,
+            RedirectAttributes redirectAttributes) {
+        try {
+            bookingService.rejectBooking(id, reason);
+            redirectAttributes.addFlashAttribute("success", "Booking rejected.");
+        } catch (Exception e) {
+            log.error("Error rejecting booking", e);
+            redirectAttributes.addFlashAttribute("error", "Failed to reject booking: " + e.getMessage());
+        }
+        return "redirect:/admin/bookings";
     }
 }

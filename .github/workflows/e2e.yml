@@ -1,0 +1,56 @@
+name: E2E Tests
+
+on:
+    workflow_dispatch:
+    pull_request:
+        branches: [main]
+
+env:
+    JAVA_VERSION: "17"
+
+jobs:
+    e2e:
+        name: Cypress E2E
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: ${{ env.JAVA_VERSION }}
+                  distribution: temurin
+                  cache: maven
+
+            - name: Build and start backend
+              run: |
+                  ./mvnw clean package -DskipTests -B
+                  java -jar target/*.jar \
+                    --spring.datasource.url=jdbc:h2:mem:e2edb\;MODE=PostgreSQL\;INIT=CREATE\ TYPE\ IF\ NOT\ EXISTS\ JSONB\ AS\ TEXT \
+                    --spring.datasource.driverClassName=org.h2.Driver \
+                    --spring.datasource.username=sa \
+                    --spring.datasource.password= \
+                    --spring.jpa.database-platform=org.hibernate.dialect.H2Dialect \
+                    --spring.jpa.hibernate.ddl-auto=create &
+                  echo "Waiting for backend to start..."
+                  for i in $(seq 1 30); do
+                    curl -sf http://localhost:8080/actuator/health && break
+                    sleep 2
+                  done
+
+            - name: Install Cypress
+              run: npx cypress install
+
+            - name: Run Cypress tests
+              run: npx cypress run --config baseUrl=http://localhost:8080
+              env:
+                  CYPRESS_ADMIN_EMAIL: ${{ secrets.DEMO_ADMIN_EMAIL || 'admin@campus.com' }}
+                  CYPRESS_ADMIN_PASSWORD: ${{ secrets.DEMO_ADMIN_PASSWORD || 'admin123' }}
+
+            - name: Upload screenshots on failure
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: cypress-screenshots
+                  path: cypress/screenshots/
+                  retention-days: 7

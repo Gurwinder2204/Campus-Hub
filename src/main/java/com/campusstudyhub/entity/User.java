@@ -37,6 +37,9 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "tenant_id", nullable = false)
+    private String tenantId = "default";
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

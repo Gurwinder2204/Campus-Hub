@@ -8,6 +8,8 @@ A modern, full-stack web application for managing and sharing educational resour
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.2-brightgreen)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue)
+![CI](https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen)
 
 ## ✨ Features
 
@@ -19,6 +21,11 @@ A modern, full-stack web application for managing and sharing educational resour
 - **👤 User Authentication** - Secure login with Spring Security
 - **🛡️ Admin Panel** - Dedicated admin dashboard for content management
 - **📱 Responsive Design** - Beautiful dark-themed UI that works on all devices
+- **📅 Room Booking** - Reserve study rooms with admin approval workflow
+- **📊 Analytics** - Usage tracking with Prometheus + Grafana dashboards
+- **🔒 Security** - Rate limiting, CSP headers, HSTS, role-based access
+- **📝 Study Planner** - Task management with priorities and deadlines
+- **🔔 Notifications** - Firebase Cloud Messaging integration
 
 ## 🛠️ Tech Stack
 
@@ -201,9 +208,99 @@ This project is configured for deployment on Render with PostgreSQL:
 java -jar target/campus-study-hub-1.0.0.jar
 ```
 
-## 📸 Screenshots
+## 🎯 Live Demo
 
-*Coming soon*
+### One-Click Start
+
+```bash
+# Start all services, seed data, and print URLs
+./scripts/start-demo.sh
+```
+
+### Manual Start
+
+```bash
+./mvnw spring-boot:run
+# Open http://localhost:8080
+# Admin: admin@campus.com / admin123
+```
+
+### Run Demo Scenario
+
+```bash
+# Simulate a full demo flow (booking, tasks, analytics)
+./scripts/demo-scenario.sh
+```
+
+## 🏗️ Architecture Overview
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Browser    │     │  Mobile App  │     │   Grafana    │
+└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+       │                    │                    │
+       ▼                    ▼                    ▼
+┌─────────────────────────────────────────────────────────┐
+│              Spring Boot 3.2 (Java 17)                  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │
+│  │ Security │ │ REST API │ │ MVC/View │ │  Actuator   │ │
+│  └──────────┘ └──────────┘ └──────────┘ └────────────┘ │
+├─────────────────────────────────────────────────────────┤
+│    PostgreSQL    │    Redis Cache    │   File Storage   │
+└─────────────────────────────────────────────────────────┘
+```
+
+For detailed diagrams see [Architecture Docs](docs/architecture/system-architecture.md).
+
+## 🔑 Key Technologies
+
+| Category | Technology |
+| --- | --- |
+| Backend | Java 17, Spring Boot 3.2, Spring Security |
+| Frontend | Thymeleaf, Bootstrap 5 |
+| Database | PostgreSQL 15, Flyway (10 migrations) |
+| Cache | Redis |
+| Monitoring | Prometheus, Grafana, Micrometer |
+| CI/CD | GitHub Actions (release + e2e) |
+| Testing | JUnit 5, Cypress, k6 |
+| Container | Docker multi-stage build |
+
+## ☁️ Deployment
+
+### Docker
+
+```bash
+docker build -t campus-hub .
+docker run -p 8080:8080 --env-file .env campus-hub
+```
+
+### Docker Compose
+
+```bash
+docker compose up -d
+```
+
+### Render
+
+1. Create PostgreSQL database on Render
+2. Create Web Service → point to this repo
+3. Build: `./mvnw clean package -DskipTests`
+4. Start: `java -jar target/*.jar`
+5. Set env vars: `DATABASE_URL`, `DB_USERNAME`, `DB_PASSWORD`
+
+See [Handoff Guide](docs/handoff.md) for full deployment instructions.
+
+## 📚 Documentation
+
+| Document | Description |
+| --- | --- |
+| [API Reference](docs/api-reference.md) | All REST and MVC endpoints |
+| [Architecture](docs/architecture/system-architecture.md) | System diagrams |
+| [Portfolio](docs/portfolio.md) | Project showcase |
+| [Presentation Guide](docs/presentation-guide.md) | Demo tips |
+| [Release Checklist](docs/release-checklist.md) | Pre-release steps |
+| [Privacy Policy](docs/privacy-policy.md) | Data handling |
+| [Handoff Guide](docs/handoff.md) | Maintainer onboarding |
 
 ## 🤝 Contributing
 
@@ -212,6 +309,31 @@ java -jar target/campus-study-hub-1.0.0.jar
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## 🚀 Release
+
+Releases are managed via GitHub Actions. To create a new release:
+
+### Automatic (tag-based)
+
+```bash
+git tag v1.0.0 -m "v1.0.0 release"
+git push origin v1.0.0
+```
+
+This triggers the release workflow, which builds the JAR, creates a Docker image, and publishes a GitHub Release.
+
+### Manual (workflow_dispatch)
+
+1. Go to **Actions** → **Release** workflow
+2. Click **Run workflow**
+3. Optionally enter a version string (e.g. `v1.0.1`)
+
+### CI Secrets (optional)
+
+| Secret | Purpose |
+|--------|---------|
+| `CR_PAT` | Push Docker images to `ghcr.io` |
 
 ## 📄 License
 
