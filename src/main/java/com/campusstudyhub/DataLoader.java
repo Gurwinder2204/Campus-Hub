@@ -5,10 +5,12 @@ import com.campusstudyhub.entity.Semester;
 import com.campusstudyhub.entity.Subject;
 import com.campusstudyhub.entity.VideoLink;
 import com.campusstudyhub.entity.User;
+import com.campusstudyhub.entity.Poi;
 import com.campusstudyhub.repository.RoomRepository;
 import com.campusstudyhub.repository.SemesterRepository;
 import com.campusstudyhub.repository.SubjectRepository;
 import com.campusstudyhub.repository.VideoLinkRepository;
+import com.campusstudyhub.repository.PoiRepository;
 import com.campusstudyhub.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,7 @@ public class DataLoader {
     private final SubjectRepository subjectRepository;
     private final VideoLinkRepository videoLinkRepository;
     private final RoomRepository roomRepository;
+    private final PoiRepository poiRepository;
     private final UserService userService;
 
     // Admin configuration from properties
@@ -55,11 +58,13 @@ public class DataLoader {
             SubjectRepository subjectRepository,
             VideoLinkRepository videoLinkRepository,
             RoomRepository roomRepository,
+            PoiRepository poiRepository,
             UserService userService) {
         this.semesterRepository = semesterRepository;
         this.subjectRepository = subjectRepository;
         this.videoLinkRepository = videoLinkRepository;
         this.roomRepository = roomRepository;
+        this.poiRepository = poiRepository;
         this.userService = userService;
     }
 
@@ -90,6 +95,14 @@ public class DataLoader {
             log.info("Rooms seeded successfully!");
         } else {
             log.info("Rooms already exist, skipping seeding.");
+        }
+
+        // Seed campus POIs for Chitkara University Baddi
+        if (poiRepository.count() == 0) {
+            seedPois();
+            log.info("Campus POIs seeded successfully!");
+        } else {
+            log.info("POIs already exist, skipping seeding.");
         }
 
         log.info("Data seeding completed!");
@@ -215,5 +228,51 @@ public class DataLoader {
             videoLinkRepository.save(video);
             log.info("Sample video added for: {}", subject.getName());
         }
+    }
+
+    private void seedPois() {
+        createPoi("Academic Block A", "BUILDING", "Main academic block with CSE & IT departments, smart classrooms",
+                30.9582, 76.9008, "Ground to 4th Floor", "Mon-Sat 8:00 AM - 6:00 PM");
+        createPoi("Academic Block B", "BUILDING", "ECE, EE, and ME departments with lecture halls",
+                30.9576, 76.9012, "Ground to 3rd Floor", "Mon-Sat 8:00 AM - 6:00 PM");
+        createPoi("Academic Block C", "BUILDING", "MBA, BBA, and Pharmacy departments",
+                30.9570, 76.9005, "Ground to 3rd Floor", "Mon-Sat 8:00 AM - 5:00 PM");
+        createPoi("Central Library", "LIBRARY", "Main library with 50,000+ books, digital section, reading halls",
+                30.9580, 76.8998, "Ground to 2nd Floor", "Mon-Sat 8:00 AM - 10:00 PM");
+        createPoi("Computer Lab 1", "LAB", "High-performance computing lab with 60 workstations, projector",
+                30.9584, 76.9010, "2nd Floor, Block A", "Mon-Sat 9:00 AM - 5:00 PM");
+        createPoi("Computer Lab 2", "LAB", "Software development lab with latest IDEs and tools",
+                30.9583, 76.9006, "3rd Floor, Block A", "Mon-Sat 9:00 AM - 5:00 PM");
+        createPoi("Physics Lab", "LAB", "Physics experimentation lab with modern equipment",
+                30.9575, 76.9015, "1st Floor, Block B", "Mon-Fri 9:00 AM - 4:00 PM");
+        createPoi("Main Canteen", "CANTEEN", "Central dining hall serving breakfast, lunch, and snacks",
+                30.9573, 76.8995, "Ground Floor", "Mon-Sat 7:30 AM - 8:00 PM");
+        createPoi("Cafeteria Block C", "CANTEEN", "Cafe with beverages, snacks, and fast food",
+                30.9568, 76.9000, "Ground Floor", "Mon-Sat 8:00 AM - 6:00 PM");
+        createPoi("Boys Hostel", "HOSTEL", "Boys residential hostel with 200+ rooms, WiFi, laundry",
+                30.9590, 76.8990, "Ground to 4th Floor", "24/7");
+        createPoi("Girls Hostel", "HOSTEL", "Girls residential hostel with 150+ rooms, WiFi, common room",
+                30.9588, 76.9020, "Ground to 4th Floor", "24/7");
+        createPoi("Sports Complex", "SPORTS", "Basketball, volleyball, badminton courts, gym, and cricket ground",
+                30.9565, 76.9018, "Open Ground", "Mon-Sat 6:00 AM - 8:00 PM");
+        createPoi("Auditorium", "BUILDING", "Main auditorium with 500 seating capacity for events and seminars",
+                30.9578, 76.9003, "Ground Floor", "As per event schedule");
+        createPoi("Admin Block", "BUILDING", "Administrative offices, registrar, accounts, and examination cell",
+                30.9585, 76.8995, "Ground to 2nd Floor", "Mon-Fri 9:00 AM - 5:00 PM");
+        createPoi("Parking Area", "PARKING", "Main student and staff parking with 200+ vehicle capacity",
+                30.9560, 76.8990, null, "24/7");
+    }
+
+    private void createPoi(String name, String category, String description,
+            double lat, double lng, String floor, String hours) {
+        Poi poi = new Poi();
+        poi.setName(name);
+        poi.setCategory(category);
+        poi.setDescription(description);
+        poi.setLatitude(lat);
+        poi.setLongitude(lng);
+        poi.setFloor(floor);
+        poi.setOpeningHours(hours);
+        poiRepository.save(poi);
     }
 }

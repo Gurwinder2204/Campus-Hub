@@ -108,6 +108,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**")
                                                 .permitAll()
                                                 .requestMatchers("/actuator/**").permitAll()
+                                                .requestMatchers("/pois/api/**").permitAll()
 
                                                 // Admin only — Thymeleaf admin pages
                                                 .requestMatchers("/admin/**").hasRole("ADMIN")

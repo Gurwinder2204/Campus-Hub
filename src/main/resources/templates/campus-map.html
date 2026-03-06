@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Map - Chitkara University Baddi</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- Leaflet CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+        <style>
+            #campus-map {
+                height: 550px;
+                border-radius: 15px;
+                border: 2px solid rgba(102, 126, 234, 0.4);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                z-index: 1;
+            }
+
+            .map-header {
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+                border: 1px solid rgba(102, 126, 234, 0.3);
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .poi-sidebar {
+                max-height: 550px;
+                overflow-y: auto;
+                padding-right: 5px;
+            }
+
+            .poi-sidebar::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .poi-sidebar::-webkit-scrollbar-thumb {
+                background: rgba(102, 126, 234, 0.5);
+                border-radius: 4px;
+            }
+
+            .poi-card {
+                background: rgba(22, 33, 62, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                padding: 12px;
+                margin-bottom: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .poi-card:hover {
+                border-color: #667eea;
+                transform: translateX(5px);
+                background: rgba(102, 126, 234, 0.15);
+            }
+
+            .poi-card.active {
+                border-color: #667eea;
+                background: rgba(102, 126, 234, 0.2);
+            }
+
+            .category-badge {
+                font-size: 0.7rem;
+            }
+
+            .search-box {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                color: #fff;
+                padding: 8px 15px;
+                width: 100%;
+            }
+
+            .search-box::placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+            .search-box:focus {
+                outline: none;
+                border-color: #667eea;
+                background: rgba(255, 255, 255, 0.15);
+            }
+
+            .category-filter {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+
+            .category-filter .btn {
+                font-size: 0.75rem;
+                padding: 3px 10px;
+                border-radius: 20px;
+            }
+
+            .stats-pill {
+                background: rgba(102, 126, 234, 0.2);
+                border: 1px solid rgba(102, 126, 234, 0.3);
+                border-radius: 20px;
+                padding: 4px 12px;
+                font-size: 0.8rem;
+            }
+
+            .leaflet-popup-content-wrapper {
+                background: #16213e !important;
+                color: #fff !important;
+                border-radius: 10px !important;
+                border: 1px solid rgba(102, 126, 234, 0.4) !important;
+            }
+
+            .leaflet-popup-tip {
+                background: #16213e !important;
+            }
+
+            .leaflet-popup-content {
+                margin: 10px 15px !important;
+            }
+
+            .leaflet-popup-content h5 {
+                color: #667eea;
+                margin-bottom: 5px;
+            }
+
+            .leaflet-popup-content p {
+                margin: 3px 0;
+                font-size: 0.85rem;
+            }
+        </style>
+
+        <div class="map-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-geo-alt-fill me-2" style="color:#667eea"></i>Chitkara University — Campus Map
+                    </h2>
+                    <p class="text-muted mb-0">Baddi, Himachal Pradesh · Interactive AR-Ready Navigation</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="stats-pill"><i class="bi bi-buildings me-1"></i><span id="poi-count">0</span>
+                        Locations</span>
+                    <a th:href="@{/pois/new}" class="btn btn-primary btn-sm" sec:authorize="hasRole('ADMIN')">
+                        <i class="bi bi-plus-lg me-1"></i>Add Location</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- Map -->
+            <div class="col-lg-8">
+                <div id="campus-map"></div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <input type="text" id="poi-search" class="search-box mb-3"
+                    placeholder="🔍 Search classrooms, labs, buildings...">
+
+                <div class="category-filter mb-3" id="category-filters">
+                    <button class="btn btn-outline-light btn-sm active" data-cat="ALL">All</button>
+                    <button class="btn btn-outline-info btn-sm" data-cat="BUILDING">🏢 Buildings</button>
+                    <button class="btn btn-outline-success btn-sm" data-cat="LIBRARY">📚 Library</button>
+                    <button class="btn btn-outline-warning btn-sm" data-cat="LAB">🔬 Labs</button>
+                    <button class="btn btn-outline-danger btn-sm" data-cat="CANTEEN">🍽️ Canteen</button>
+                    <button class="btn btn-outline-primary btn-sm" data-cat="HOSTEL">🏠 Hostel</button>
+                    <button class="btn btn-outline-secondary btn-sm" data-cat="SPORTS">⚽ Sports</button>
+                </div>
+
+                <div class="poi-sidebar" id="poi-list">
+                    <!-- POI cards rendered by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaflet JS -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script th:inline="javascript">
+            // POI data from server
+            const pois = /*[[${pois}]]*/[];
+
+            // Chitkara University Baddi coordinates
+            const CAMPUS_CENTER = [30.9578, 76.9003];
+            const CAMPUS_ZOOM = 17;
+
+            // Category colors
+            const CAT_COLORS = {
+                'BUILDING': '#667eea', 'LIBRARY': '#00c9a7', 'LAB': '#f5a623',
+                'CANTEEN': '#f5576c', 'HOSTEL': '#764ba2', 'SPORTS': '#36d1dc',
+                'PARKING': '#95a5a6', 'CLASSROOM': '#e74c3c'
+            };
+
+            // Category icons
+            const CAT_ICONS = {
+                'BUILDING': '🏢', 'LIBRARY': '📚', 'LAB': '🔬', 'CANTEEN': '🍽️',
+                'HOSTEL': '🏠', 'SPORTS': '⚽', 'PARKING': '🅿️', 'CLASSROOM': '🏫'
+            };
+
+            // Initialize map
+            const map = L.map('campus-map').setView(CAMPUS_CENTER, CAMPUS_ZOOM);
+
+            // Satellite + labels tile layer
+            L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                maxZoom: 22,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            }).addTo(map);
+
+            // Store markers
+            const markers = {};
+            let activeFilter = 'ALL';
+
+            // Create custom icon
+            function createIcon(category) {
+                const color = CAT_COLORS[category] || '#667eea';
+                return L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        background:${color};
+                        width:32px; height:32px;
+                        border-radius:50%;
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:16px;
+                        border:2px solid #fff;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.4);
+                        cursor:pointer;
+                    ">${CAT_ICONS[category] || '📍'}</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -20]
+                });
+            }
+
+            // Add markers for all POIs
+            pois.forEach(poi => {
+                if (poi.latitude && poi.longitude) {
+                    const marker = L.marker([poi.latitude, poi.longitude], {
+                        icon: createIcon(poi.category)
+                    }).addTo(map);
+
+                    const popup = `
+                        <h5>${CAT_ICONS[poi.category] || '📍'} ${poi.name}</h5>
+                        <p><span class="badge" style="background:${CAT_COLORS[poi.category] || '#667eea'}">${poi.category}</span></p>
+                        ${poi.description ? `<p>${poi.description}</p>` : ''}
+                        ${poi.floor ? `<p>📍 ${poi.floor}</p>` : ''}
+                        ${poi.openingHours ? `<p>🕐 ${poi.openingHours}</p>` : ''}
+                        <p style="font-size:0.75rem;color:#aaa">GPS: ${poi.latitude.toFixed(4)}, ${poi.longitude.toFixed(4)}</p>
+                    `;
+                    marker.bindPopup(popup);
+                    markers[poi.id] = { marker, poi };
+                }
+            });
+
+            document.getElementById('poi-count').textContent = Object.keys(markers).length;
+
+            // Render POI sidebar
+            function renderSidebar(filter, search) {
+                const list = document.getElementById('poi-list');
+                const filtered = pois.filter(p => {
+                    if (filter !== 'ALL' && p.category !== filter) return false;
+                    if (search && !p.name.toLowerCase().includes(search.toLowerCase()) &&
+                        !(p.description && p.description.toLowerCase().includes(search.toLowerCase()))) return false;
+                    return p.latitude && p.longitude;
+                });
+
+                if (filtered.length === 0) {
+                    list.innerHTML = `<div class="text-center text-muted py-4">
+                        <i class="bi bi-map" style="font-size:2rem"></i>
+                        <p class="mt-2">No locations found.</p>
+                    </div>`;
+                    return;
+                }
+
+                list.innerHTML = filtered.map(p => `
+                    <div class="poi-card" data-id="${p.id}" onclick="flyTo(${p.id})">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${CAT_ICONS[p.category] || '📍'} ${p.name}</strong>
+                                <span class="badge category-badge ms-1" style="background:${CAT_COLORS[p.category] || '#667eea'}">${p.category}</span>
+                            </div>
+                        </div>
+                        ${p.floor ? `<small class="text-muted d-block mt-1">📍 ${p.floor}</small>` : ''}
+                        ${p.openingHours ? `<small class="text-muted d-block">🕐 ${p.openingHours}</small>` : ''}
+                    </div>
+                `).join('');
+            }
+
+            // Fly to marker
+            function flyTo(id) {
+                const entry = markers[id];
+                if (entry) {
+                    map.flyTo([entry.poi.latitude, entry.poi.longitude], 19, { duration: 1 });
+                    entry.marker.openPopup();
+                    document.querySelectorAll('.poi-card').forEach(c => c.classList.remove('active'));
+                    const card = document.querySelector(`.poi-card[data-id="${id}"]`);
+                    if (card) card.classList.add('active');
+                }
+            }
+
+            // Category filter
+            document.getElementById('category-filters').addEventListener('click', e => {
+                if (e.target.dataset.cat) {
+                    activeFilter = e.target.dataset.cat;
+                    document.querySelectorAll('#category-filters .btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    // Show/hide markers
+                    Object.values(markers).forEach(({ marker, poi }) => {
+                        if (activeFilter === 'ALL' || poi.category === activeFilter) {
+                            marker.addTo(map);
+                        } else {
+                            map.removeLayer(marker);
+                        }
+                    });
+
+                    renderSidebar(activeFilter, document.getElementById('poi-search').value);
+                }
+            });
+
+            // Search
+            document.getElementById('poi-search').addEventListener('input', e => {
+                renderSidebar(activeFilter, e.target.value);
+            });
+
+            // Initial render
+            renderSidebar('ALL', '');
+        </script>
+    </div>
+</body>
+
+</html>
