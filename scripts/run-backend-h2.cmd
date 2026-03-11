@@ -1,0 +1,16 @@
+@echo off
+setlocal
+set "JAVA_HOME=C:\Program Files\Java\jdk-17"
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+set "SPRING_DATASOURCE_URL=jdbc:h2:mem:campushub;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
+set "SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver"
+set "SPRING_DATASOURCE_USERNAME=sa"
+set "SPRING_DATASOURCE_PASSWORD="
+set "SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect"
+set "SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop"
+set "SERVER_ADDRESS=0.0.0.0"
+set "APP_ADMIN_EMAIL=admin@campus.com"
+set "APP_ADMIN_PASSWORD=admin123"
+set "APP_ADMIN_NAME=Campus Admin"
+set "APP_DATALOADER_ENABLED=true"
+call .\mvnw.cmd spring-boot:run

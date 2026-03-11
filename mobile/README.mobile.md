@@ -1,40 +1,48 @@
 # Campus Study Hub — Mobile Build Guide
 
+The Android app now lives in `mobile/android` as a native Jetpack Compose client for:
+
+- login and registration
+- semester and subject browsing
+- notes, papers, and video resources
+- study planner tasks
+- room booking requests
+
 ## Android
 
 ### Prerequisites
 
-- Android SDK (API 34+)
+- Android SDK (API 35 installed locally is fine)
 - JDK 17
-- Gradle 8+
+- Gradle wrapper included in this repo
 
 ### Build Unsigned APK
 
 ```bash
 cd mobile/android
-./gradlew assembleDebug
-# Output: app/build/outputs/apk/debug/app-debug.apk
+JAVA_HOME=/path/to/jdk-17 ./gradlew assembleDebug
 ```
+
+On this Windows machine the generated APK was written to:
+
+```text
+C:\Users\Gurwinder\AppData\Local\Temp\CampusHubAndroid\app\outputs\apk\debug\app-debug.apk
+```
+
+The app defaults to `http://10.0.2.2:8080/` as the backend URL for Android Emulator use. You can change the backend URL from the login screen.
 
 ### Build Signed Release APK
 
 ```bash
-# Set keystore environment variables
-export ANDROID_KEYSTORE_PATH=/path/to/keystore.jks
-export ANDROID_KEYSTORE_PASSWORD=your_password
-export ANDROID_KEY_ALIAS=your_alias
-export ANDROID_KEY_PASSWORD=your_key_password
-
 cd mobile/android
-./gradlew assembleRelease
-# Output: app/build/outputs/apk/release/app-release.apk
+JAVA_HOME=/path/to/jdk-17 ./gradlew assembleRelease
 ```
 
 ### Using the build script
 
 ```bash
 ./mobile/build-android.sh
-# Places APK into /builds/android/
+# Copies the debug APK into /builds/android/
 ```
 
 ---

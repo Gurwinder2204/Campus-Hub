@@ -7,6 +7,7 @@ set -e
 
 BUILD_DIR="$(cd "$(dirname "$0")/.." && pwd)/builds/android"
 ANDROID_DIR="$(cd "$(dirname "$0")" && pwd)/android"
+TMP_ROOT="${TMPDIR:-${TEMP:-/tmp}}"
 
 echo "=== Campus Study Hub — Android Build ==="
 
@@ -27,7 +28,7 @@ echo "Building debug APK..."
 ./gradlew assembleDebug
 
 # Copy APK to builds directory
-APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+APK_PATH="$TMP_ROOT/CampusHubAndroid/app/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK_PATH" ]; then
   cp "$APK_PATH" "$BUILD_DIR/campus-study-hub-debug.apk"
   echo "✅ APK built successfully: $BUILD_DIR/campus-study-hub-debug.apk"
