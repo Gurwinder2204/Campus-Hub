@@ -1,5 +1,9 @@
 @echo off
 setlocal
+set "ROOT_DIR=%~dp0.."
+for %%I in ("%ROOT_DIR%") do set "ROOT_SHORT=%%~sI"
+set "MAVEN_USER_HOME=%ROOT_SHORT%\.m2"
+set "MAVEN_OPTS=-Dmaven.repo.local=%ROOT_SHORT%\.m2\repository"
 set "JAVA_HOME=C:\Program Files\Java\jdk-17"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 set "SPRING_DATASOURCE_URL=jdbc:h2:mem:campushub;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"

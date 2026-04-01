@@ -15,6 +15,7 @@ import com.campushub.mobile.data.SemesterItem
 import com.campushub.mobile.data.StudyTaskItem
 import com.campushub.mobile.data.SubjectDetail
 import com.campushub.mobile.data.SubjectSummary
+import com.campushub.mobile.data.PoiItem
 import com.campushub.mobile.data.UserSummary
 import kotlinx.coroutines.launch
 
@@ -44,6 +45,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private set
 
     var rooms by mutableStateOf<List<RoomItem>>(emptyList())
+        private set
+
+    var pois by mutableStateOf<List<PoiItem>>(emptyList())
         private set
 
     var bookings by mutableStateOf<List<BookingItem>>(emptyList())
@@ -104,6 +108,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             subjectDetail = null
             tasks = emptyList()
             rooms = emptyList()
+            pois = emptyList()
             bookings = emptyList()
             statusMessage = "Signed out"
         }
@@ -115,6 +120,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             semesters = repository.semesters()
             tasks = repository.tasks()
             rooms = repository.rooms()
+            pois = repository.pois()
             bookings = repository.bookings()
         }
     }

@@ -123,3 +123,15 @@ data class BookingRequest(
     val endAt: String,
     val purpose: String?
 )
+
+data class PoiItem(
+    val id: Long,
+    val name: String,
+    val description: String?,
+    val category: String,
+    val latitude: Double?,
+    val longitude: Double?,
+    val imageUrl: String?,
+    val floor: String?,
+    val openingHours: String?
+)

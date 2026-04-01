@@ -84,3 +84,11 @@ node_modules/
 
 # Build outputs
 builds/
+
+# Local Android/Gradle caches
+.m2/
+mobile/android/.gradle-user-home/
+mobile/android/.gradle/
+
+# Local screenshots
+mobile/android/*.png

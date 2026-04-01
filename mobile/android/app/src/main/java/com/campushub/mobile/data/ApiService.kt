@@ -66,6 +66,9 @@ interface ApiService {
     @PUT("api/v1/bookings/{id}/cancel")
     suspend fun cancelBooking(@Path("id") id: Long): Response<BookingItem>
 
+    @GET("pois/api")
+    suspend fun pois(@Query("category") category: String? = null): Response<List<PoiItem>>
+
     @Streaming
     @GET
     suspend fun downloadFile(@Url url: String): Response<ResponseBody>

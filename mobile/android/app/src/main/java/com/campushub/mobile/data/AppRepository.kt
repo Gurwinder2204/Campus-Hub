@@ -72,6 +72,8 @@ class AppRepository(private val context: Context) {
 
     suspend fun cancelBooking(id: Long): BookingItem = apiService.cancelBooking(id).requireBody()
 
+    suspend fun pois(category: String? = null): List<PoiItem> = apiService.pois(category).requireBody()
+
     suspend fun downloadToCache(resource: ResourceItem): File {
         val fileName = Uri.parse(resource.url).lastPathSegment ?: "${resource.type.lowercase()}-${resource.id}"
         val target = File(context.cacheDir, fileName)
