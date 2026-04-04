@@ -135,3 +135,52 @@ data class PoiItem(
     val floor: String?,
     val openingHours: String?
 )
+
+data class CommunitySummary(
+    val activeLostItems: Long,
+    val activeFoundItems: Long,
+    val openComplaints: Long,
+    val myOpenComplaints: Long
+)
+
+data class ComplaintItem(
+    val id: Long,
+    val title: String,
+    val description: String,
+    val category: String,
+    val status: String,
+    val adminResponse: String?,
+    val submittedBy: String,
+    val createdAt: String?,
+    val resolvedAt: String?,
+    val mine: Boolean
+)
+
+data class CreateComplaintRequest(
+    val title: String,
+    val description: String,
+    val category: String
+)
+
+data class LostFoundItem(
+    val id: Long,
+    val title: String,
+    val description: String?,
+    val type: String,
+    val location: String?,
+    val contactInfo: String?,
+    val imageUrl: String?,
+    val status: String,
+    val postedBy: String,
+    val createdAt: String?,
+    val mine: Boolean
+)
+
+data class CreateLostFoundRequest(
+    val title: String,
+    val description: String?,
+    val type: String,
+    val location: String?,
+    val contactInfo: String?,
+    val imageUrl: String?
+)

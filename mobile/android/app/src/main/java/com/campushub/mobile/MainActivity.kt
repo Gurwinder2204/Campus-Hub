@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -104,11 +103,12 @@ import com.campushub.mobile.data.SemesterItem
 import com.campushub.mobile.data.SubjectDetail
 import com.campushub.mobile.data.SubjectSummary
 import com.campushub.mobile.data.BookingItem
+import com.campushub.mobile.data.ComplaintItem
+import com.campushub.mobile.data.LostFoundItem
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             MaterialTheme(
                 colorScheme = campusHubColorScheme(),
@@ -128,6 +128,11 @@ private enum class AppTab(val title: String, val icon: ImageVector) {
     CAMPUS("Campus", Icons.Outlined.Explore),
     COMMUNITY("Community", Icons.Outlined.Groups),
     BOOKING("Booking", Icons.Outlined.EventAvailable)
+}
+
+private enum class CommunitySection {
+    COMPLAINTS,
+    LOST_FOUND
 }
 
 private data class QuickLink(
@@ -648,8 +653,26 @@ private fun CampusTab(viewModel: MainViewModel, padding: PaddingValues) {
 
 @Composable
 private fun CommunityTab(viewModel: MainViewModel, padding: PaddingValues) {
-    val baseUrl = viewModel.baseUrl.trimEnd('/')
-    val context = LocalContext.current
+    var complaintTitle by rememberSaveable { mutableStateOf("") }
+    var complaintDescription by rememberSaveable { mutableStateOf("") }
+    var complaintCategory by rememberSaveable { mutableStateOf("INFRASTRUCTURE") }
+    var complaintFilter by rememberSaveable { mutableStateOf("ALL") }
+    var selectedSection by rememberSaveable { mutableStateOf(CommunitySection.COMPLAINTS) }
+
+    var itemTitle by rememberSaveable { mutableStateOf("") }
+    var itemDescription by rememberSaveable { mutableStateOf("") }
+    var itemType by rememberSaveable { mutableStateOf("LOST") }
+    var itemLocation by rememberSaveable { mutableStateOf("") }
+    var itemContact by rememberSaveable { mutableStateOf("") }
+    var itemFilter by rememberSaveable { mutableStateOf("ALL") }
+
+    val summary = viewModel.communitySummary
+    val filteredComplaints = viewModel.complaints.filter { complaint ->
+        complaintFilter == "ALL" || complaint.status.equals(complaintFilter, ignoreCase = true)
+    }
+    val filteredItems = viewModel.lostFoundItems.filter { item ->
+        itemFilter == "ALL" || item.type.equals(itemFilter, ignoreCase = true)
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -663,39 +686,322 @@ private fun CommunityTab(viewModel: MainViewModel, padding: PaddingValues) {
                 Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
                     Text("Community Hub", style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "The AI reference app includes complaints and lost & found. Your backend already has those pages, and native APIs are the next migration step.",
+                        "Report campus issues, post lost or found items, and track updates without leaving the app.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
         }
         item {
-            CommunityActionCard(
-                title = "Complaints",
-                subtitle = "Open the current complaints flow from your backend",
-                icon = Icons.Outlined.ReportProblem,
-                color = CampusTheme.Danger
-            ) {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("$baseUrl/complaints")))
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.md)) {
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    label = "Lost",
+                    value = "${summary?.activeLostItems ?: 0}",
+                    color = CampusTheme.Warning,
+                    onClick = {
+                        selectedSection = CommunitySection.LOST_FOUND
+                        itemFilter = "LOST"
+                    }
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    label = "Found",
+                    value = "${summary?.activeFoundItems ?: 0}",
+                    color = CampusTheme.Success,
+                    onClick = {
+                        selectedSection = CommunitySection.LOST_FOUND
+                        itemFilter = "FOUND"
+                    }
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    label = "Open",
+                    value = "${summary?.openComplaints ?: 0}",
+                    color = CampusTheme.Danger,
+                    onClick = {
+                        selectedSection = CommunitySection.COMPLAINTS
+                        complaintFilter = "OPEN"
+                    }
+                )
             }
         }
         item {
-            CommunityActionCard(
-                title = "Lost & Found",
-                subtitle = "Open the current lost & found flow from your backend",
-                icon = Icons.Outlined.Search,
-                color = CampusTheme.Community
-            ) {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("$baseUrl/lost-found")))
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                FilterChip(
+                    selected = selectedSection == CommunitySection.COMPLAINTS,
+                    onClick = { selectedSection = CommunitySection.COMPLAINTS },
+                    label = { Text("Complaints") }
+                )
+                FilterChip(
+                    selected = selectedSection == CommunitySection.LOST_FOUND,
+                    onClick = { selectedSection = CommunitySection.LOST_FOUND },
+                    label = { Text("Lost & Found") }
+                )
             }
         }
         item {
-            CommunityActionCard(
-                title = "Server Settings",
-                subtitle = "Current backend: ${viewModel.baseUrl}",
-                icon = Icons.Outlined.Settings,
-                color = CampusTheme.Primary
-            ) {}
+            Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.Surface)) {
+                Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                    Text("File a Complaint", style = MaterialTheme.typography.titleLarge)
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)
+                    ) {
+                        listOf(
+                            "INFRASTRUCTURE" to "Infrastructure",
+                            "ACADEMIC" to "Academic",
+                            "HOSTEL" to "Hostel",
+                            "CANTEEN" to "Canteen",
+                            "OTHER" to "Other"
+                        ).forEach { (value, label) ->
+                            FilterChip(
+                                selected = complaintCategory == value,
+                                onClick = { complaintCategory = value },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                    OutlinedTextField(
+                        value = complaintTitle,
+                        onValueChange = { complaintTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Complaint title") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = complaintDescription,
+                        onValueChange = { complaintDescription = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Describe the issue") },
+                        minLines = 3
+                    )
+                    Button(
+                        onClick = {
+                            viewModel.createComplaint(complaintTitle, complaintDescription, complaintCategory)
+                            complaintTitle = ""
+                            complaintDescription = ""
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = complaintTitle.isNotBlank() && complaintDescription.isNotBlank(),
+                        shape = AppRadius.md
+                    ) {
+                        Icon(Icons.Outlined.ReportProblem, contentDescription = null)
+                        Spacer(modifier = Modifier.width(AppSpacing.sm))
+                        Text("Submit Complaint")
+                    }
+                }
+            }
+        }
+        if (selectedSection == CommunitySection.COMPLAINTS) {
+            item {
+                Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.Surface)) {
+                    Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Complaints", style = MaterialTheme.typography.titleLarge)
+                            TextButton(onClick = { viewModel.refreshCommunity() }) {
+                                Text("Refresh")
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                            listOf("ALL", "OPEN", "IN_PROGRESS", "RESOLVED").forEach { status ->
+                                FilterChip(
+                                    selected = complaintFilter == status,
+                                    onClick = { complaintFilter = status },
+                                    label = { Text(status.replace('_', ' ')) }
+                                )
+                            }
+                        }
+                        if (filteredComplaints.isEmpty()) {
+                            EmptyStateCard("No complaints match this filter yet.")
+                        } else {
+                            filteredComplaints.forEach { complaint ->
+                                ComplaintCard(
+                                    complaint = complaint,
+                                    onResolve = { viewModel.resolveComplaint(complaint.id) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.Surface)) {
+                Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                    Text("Post Lost or Found Item", style = MaterialTheme.typography.titleLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                        listOf("LOST", "FOUND").forEach { type ->
+                            FilterChip(
+                                selected = itemType == type,
+                                onClick = { itemType = type },
+                                label = { Text(type) }
+                            )
+                        }
+                    }
+                    OutlinedTextField(
+                        value = itemTitle,
+                        onValueChange = { itemTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Item title") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = itemDescription,
+                        onValueChange = { itemDescription = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Description") },
+                        minLines = 2
+                    )
+                    OutlinedTextField(
+                        value = itemLocation,
+                        onValueChange = { itemLocation = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Location") },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = itemContact,
+                        onValueChange = { itemContact = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Contact info") },
+                        singleLine = true
+                    )
+                    Button(
+                        onClick = {
+                            viewModel.createLostFound(
+                                title = itemTitle,
+                                description = itemDescription.ifBlank { null },
+                                type = itemType,
+                                location = itemLocation.ifBlank { null },
+                                contactInfo = itemContact.ifBlank { null },
+                                imageUrl = null
+                            )
+                            itemTitle = ""
+                            itemDescription = ""
+                            itemLocation = ""
+                            itemContact = ""
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = itemTitle.isNotBlank(),
+                        shape = AppRadius.md
+                    ) {
+                        Icon(Icons.Outlined.Search, contentDescription = null)
+                        Spacer(modifier = Modifier.width(AppSpacing.sm))
+                        Text("Post $itemType Item")
+                    }
+                }
+            }
+        }
+        if (selectedSection == CommunitySection.LOST_FOUND) {
+            item {
+                Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.Surface)) {
+                    Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                        Text("Lost & Found Feed", style = MaterialTheme.typography.titleLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                            listOf("ALL", "LOST", "FOUND").forEach { type ->
+                                FilterChip(
+                                    selected = itemFilter == type,
+                                    onClick = { itemFilter = type },
+                                    label = { Text(type) }
+                                )
+                            }
+                        }
+                        if (filteredItems.isEmpty()) {
+                            EmptyStateCard("No lost or found posts are available right now.")
+                        } else {
+                            filteredItems.forEach { item ->
+                                LostFoundCard(
+                                    item = item,
+                                    onResolve = { viewModel.resolveLostFound(item.id) }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComplaintCard(complaint: ComplaintItem, onResolve: () -> Unit) {
+    Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.SurfaceSecondary)) {
+        Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(complaint.title, style = MaterialTheme.typography.titleMedium)
+                    Text(complaint.category, style = MaterialTheme.typography.bodySmall, color = CampusTheme.TextMuted)
+                }
+                StatusBadge(complaint.status)
+            }
+            Text(complaint.description, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "Posted by ${if (complaint.mine) "you" else complaint.submittedBy} on ${complaint.createdAt ?: "-"}",
+                style = MaterialTheme.typography.bodySmall
+            )
+            complaint.adminResponse?.takeIf { it.isNotBlank() }?.let {
+                Card(shape = AppRadius.md, colors = CardDefaults.cardColors(containerColor = CampusTheme.PrimaryLight)) {
+                    Text(
+                        text = "Admin response: $it",
+                        modifier = Modifier.padding(AppSpacing.sm),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = CampusTheme.Primary
+                    )
+                }
+            }
+            if (complaint.mine && complaint.status != "RESOLVED" && complaint.status != "CLOSED") {
+                OutlinedButton(onClick = onResolve, shape = AppRadius.md) {
+                    Text("Mark Resolved")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LostFoundCard(item: LostFoundItem, onResolve: () -> Unit) {
+    Card(shape = AppRadius.lg, colors = CardDefaults.cardColors(containerColor = CampusTheme.SurfaceSecondary)) {
+        Column(modifier = Modifier.padding(AppSpacing.md), verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(item.title, style = MaterialTheme.typography.titleMedium)
+                    Text(item.type, style = MaterialTheme.typography.bodySmall, color = CampusTheme.TextMuted)
+                }
+                StatusBadge(item.status)
+            }
+            item.description?.takeIf { it.isNotBlank() }?.let {
+                Text(it, style = MaterialTheme.typography.bodyMedium)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                item.location?.takeIf { it.isNotBlank() }?.let {
+                    AssistChip(onClick = {}, label = { Text(it) })
+                }
+                item.contactInfo?.takeIf { it.isNotBlank() }?.let {
+                    AssistChip(onClick = {}, label = { Text(it) })
+                }
+            }
+            Text(
+                "Posted by ${if (item.mine) "you" else item.postedBy} on ${item.createdAt ?: "-"}",
+                style = MaterialTheme.typography.bodySmall
+            )
+            if (item.mine && item.status != "RESOLVED") {
+                OutlinedButton(onClick = onResolve, shape = AppRadius.md) {
+                    Text("Mark Closed")
+                }
+            }
         }
     }
 }
@@ -763,9 +1069,15 @@ private fun BookingTab(viewModel: MainViewModel, padding: PaddingValues) {
 }
 
 @Composable
-private fun StatCard(modifier: Modifier = Modifier, label: String, value: String, color: Color) {
+private fun StatCard(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    color: Color,
+    onClick: (() -> Unit)? = null
+) {
     Card(
-        modifier = modifier,
+        modifier = if (onClick != null) modifier.clickable(onClick = onClick) else modifier,
         shape = AppRadius.md,
         colors = CardDefaults.cardColors(containerColor = CampusTheme.Surface)
     ) {

@@ -69,6 +69,33 @@ interface ApiService {
     @GET("pois/api")
     suspend fun pois(@Query("category") category: String? = null): Response<List<PoiItem>>
 
+    @GET("api/v1/mobile/community/summary")
+    suspend fun communitySummary(): Response<CommunitySummary>
+
+    @GET("api/v1/mobile/community/complaints")
+    suspend fun complaints(
+        @Query("status") status: String? = null,
+        @Query("mine") mine: Boolean = false
+    ): Response<List<ComplaintItem>>
+
+    @POST("api/v1/mobile/community/complaints")
+    suspend fun createComplaint(@Body request: CreateComplaintRequest): Response<ComplaintItem>
+
+    @PUT("api/v1/mobile/community/complaints/{id}/resolve")
+    suspend fun resolveComplaint(@Path("id") id: Long): Response<ComplaintItem>
+
+    @GET("api/v1/mobile/community/lost-found")
+    suspend fun lostFound(
+        @Query("type") type: String? = null,
+        @Query("mine") mine: Boolean = false
+    ): Response<List<LostFoundItem>>
+
+    @POST("api/v1/mobile/community/lost-found")
+    suspend fun createLostFound(@Body request: CreateLostFoundRequest): Response<LostFoundItem>
+
+    @PUT("api/v1/mobile/community/lost-found/{id}/resolve")
+    suspend fun resolveLostFound(@Path("id") id: Long): Response<LostFoundItem>
+
     @Streaming
     @GET
     suspend fun downloadFile(@Url url: String): Response<ResponseBody>

@@ -74,6 +74,40 @@ class AppRepository(private val context: Context) {
 
     suspend fun pois(category: String? = null): List<PoiItem> = apiService.pois(category).requireBody()
 
+    suspend fun communitySummary(): CommunitySummary = apiService.communitySummary().requireBody()
+
+    suspend fun complaints(status: String? = null, mine: Boolean = false): List<ComplaintItem> =
+        apiService.complaints(status, mine).requireBody()
+
+    suspend fun createComplaint(title: String, description: String, category: String): ComplaintItem =
+        apiService.createComplaint(CreateComplaintRequest(title = title, description = description, category = category))
+            .requireBody()
+
+    suspend fun resolveComplaint(id: Long): ComplaintItem = apiService.resolveComplaint(id).requireBody()
+
+    suspend fun lostFound(type: String? = null, mine: Boolean = false): List<LostFoundItem> =
+        apiService.lostFound(type, mine).requireBody()
+
+    suspend fun createLostFound(
+        title: String,
+        description: String?,
+        type: String,
+        location: String?,
+        contactInfo: String?,
+        imageUrl: String?
+    ): LostFoundItem = apiService.createLostFound(
+        CreateLostFoundRequest(
+            title = title,
+            description = description,
+            type = type,
+            location = location,
+            contactInfo = contactInfo,
+            imageUrl = imageUrl
+        )
+    ).requireBody()
+
+    suspend fun resolveLostFound(id: Long): LostFoundItem = apiService.resolveLostFound(id).requireBody()
+
     suspend fun downloadToCache(resource: ResourceItem): File {
         val fileName = Uri.parse(resource.url).lastPathSegment ?: "${resource.type.lowercase()}-${resource.id}"
         val target = File(context.cacheDir, fileName)

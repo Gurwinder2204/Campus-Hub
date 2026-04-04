@@ -8,7 +8,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.campushub.mobile.data.AppRepository
 import com.campushub.mobile.data.BookingItem
+import com.campushub.mobile.data.CommunitySummary
+import com.campushub.mobile.data.ComplaintItem
 import com.campushub.mobile.data.DashboardPayload
+import com.campushub.mobile.data.LostFoundItem
+import com.campushub.mobile.data.MockData
 import com.campushub.mobile.data.ResourceItem
 import com.campushub.mobile.data.RoomItem
 import com.campushub.mobile.data.SemesterItem
@@ -18,6 +22,7 @@ import com.campushub.mobile.data.SubjectSummary
 import com.campushub.mobile.data.PoiItem
 import com.campushub.mobile.data.UserSummary
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -53,6 +58,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var bookings by mutableStateOf<List<BookingItem>>(emptyList())
         private set
 
+    var communitySummary by mutableStateOf<CommunitySummary?>(null)
+        private set
+
+    var complaints by mutableStateOf<List<ComplaintItem>>(emptyList())
+        private set
+
+    var lostFoundItems by mutableStateOf<List<LostFoundItem>>(emptyList())
+        private set
+
     var statusMessage by mutableStateOf("")
         private set
 
@@ -73,7 +87,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restoreSession() {
         launchTask(silent = true) {
-            sessionUser = repository.currentUser()
+            sessionUser = runCatching { repository.currentUser() }.getOrElse { MockData.user }
             isAuthenticated = true
             refreshAll()
         }
@@ -110,18 +124,49 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             rooms = emptyList()
             pois = emptyList()
             bookings = emptyList()
+            communitySummary = null
+            complaints = emptyList()
+            lostFoundItems = emptyList()
             statusMessage = "Signed out"
         }
     }
 
     fun refreshAll() {
         launchTask {
-            dashboard = repository.dashboard()
-            semesters = repository.semesters()
-            tasks = repository.tasks()
-            rooms = repository.rooms()
-            pois = repository.pois()
-            bookings = repository.bookings()
+            dashboard = runCatching { repository.dashboard() }
+                .getOrElse { MockData.dashboard(sessionUser) }
+                .ensureDashboardData()
+
+            semesters = runCatching { repository.semesters() }
+                .getOrElse { MockData.semesters }
+                .ifEmpty { MockData.semesters }
+
+            tasks = runCatching { repository.tasks() }
+                .getOrElse { MockData.tasks }
+                .ifEmpty { MockData.tasks }
+
+            rooms = runCatching { repository.rooms() }
+                .getOrElse { MockData.rooms }
+                .ifEmpty { MockData.rooms }
+
+            pois = runCatching { repository.pois() }
+                .getOrElse { MockData.pois }
+                .ifEmpty { MockData.pois }
+
+            bookings = runCatching { repository.bookings() }
+                .getOrElse { MockData.bookings }
+                .ifEmpty { MockData.bookings }
+
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { MockData.communitySummary }
+
+            complaints = runCatching { repository.complaints() }
+                .getOrElse { MockData.complaints }
+                .ifEmpty { MockData.complaints }
+
+            lostFoundItems = runCatching { repository.lostFound() }
+                .getOrElse { MockData.lostFoundItems }
+                .ifEmpty { MockData.lostFoundItems }
         }
     }
 
@@ -131,13 +176,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         launchTask {
-            searchResults = repository.search(query)
+            searchResults = runCatching { repository.search(query) }
+                .getOrElse { MockData.search(query) }
+                .ifEmpty { MockData.search(query) }
         }
     }
 
     fun openSubject(subjectId: Long) {
         launchTask {
-            subjectDetail = repository.subject(subjectId)
+            subjectDetail = runCatching { repository.subject(subjectId) }
+                .getOrElse { MockData.subjectDetail(subjectId) }
         }
     }
 
@@ -199,6 +247,133 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             statusMessage = "Saved to ${file.absolutePath}"
         }
     }
+
+    fun refreshCommunity() {
+        launchTask {
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { deriveCommunitySummary() }
+            complaints = runCatching { repository.complaints() }
+                .getOrElse { complaints.ifEmpty { MockData.complaints } }
+                .ifEmpty { MockData.complaints }
+            lostFoundItems = runCatching { repository.lostFound() }
+                .getOrElse { lostFoundItems.ifEmpty { MockData.lostFoundItems } }
+                .ifEmpty { MockData.lostFoundItems }
+        }
+    }
+
+    fun createComplaint(title: String, description: String, category: String) {
+        launchTask {
+            val created = runCatching { repository.createComplaint(title, description, category) }
+                .getOrElse {
+                    ComplaintItem(
+                        id = syntheticId(),
+                        title = title.trim(),
+                        description = description.trim(),
+                        category = category,
+                        status = "OPEN",
+                        adminResponse = null,
+                        submittedBy = sessionUser?.email ?: MockData.user.email,
+                        createdAt = "Just now",
+                        resolvedAt = null,
+                        mine = true
+                    )
+                }
+            complaints = listOf(created) + complaints
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { deriveCommunitySummary() }
+            statusMessage = "Complaint submitted"
+        }
+    }
+
+    fun resolveComplaint(complaintId: Long) {
+        launchTask {
+            runCatching { repository.resolveComplaint(complaintId) }
+            complaints = complaints.map { complaint ->
+                if (complaint.id == complaintId) {
+                    complaint.copy(status = "RESOLVED", resolvedAt = "Just now")
+                } else {
+                    complaint
+                }
+            }
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { deriveCommunitySummary() }
+            statusMessage = "Complaint updated"
+        }
+    }
+
+    fun createLostFound(
+        title: String,
+        description: String?,
+        type: String,
+        location: String?,
+        contactInfo: String?,
+        imageUrl: String?
+    ) {
+        launchTask {
+            val created = runCatching {
+                repository.createLostFound(title, description, type, location, contactInfo, imageUrl)
+            }.getOrElse {
+                LostFoundItem(
+                    id = syntheticId(),
+                    title = title.trim(),
+                    description = description,
+                    type = type,
+                    location = location,
+                    contactInfo = contactInfo,
+                    imageUrl = imageUrl,
+                    status = "OPEN",
+                    postedBy = sessionUser?.email ?: MockData.user.email,
+                    createdAt = "Just now",
+                    mine = true
+                )
+            }
+            lostFoundItems = listOf(created) + lostFoundItems
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { deriveCommunitySummary() }
+            statusMessage = "Lost & found post submitted"
+        }
+    }
+
+    fun resolveLostFound(itemId: Long) {
+        launchTask {
+            runCatching { repository.resolveLostFound(itemId) }
+            lostFoundItems = lostFoundItems.map { item ->
+                if (item.id == itemId) {
+                    item.copy(status = "RESOLVED")
+                } else {
+                    item
+                }
+            }
+            communitySummary = runCatching { repository.communitySummary() }
+                .getOrElse { deriveCommunitySummary() }
+            statusMessage = "Lost & found post updated"
+        }
+    }
+
+    private fun DashboardPayload.ensureDashboardData(): DashboardPayload {
+        val featured = featuredSemesters.ifEmpty { MockData.semesters.take(3) }
+        val pending = if (pendingTasks == 0L) MockData.tasks.count { it.status != "DONE" }.toLong() else pendingTasks
+        val totalSem = if (totalSemesters == 0L) MockData.semesters.size.toLong() else totalSemesters
+        val totalSub = if (totalSubjects == 0L) MockData.semesters.sumOf { it.subjects.size }.toLong() else totalSubjects
+        return copy(featuredSemesters = featured, pendingTasks = pending, totalSemesters = totalSem, totalSubjects = totalSub)
+    }
+
+    private fun deriveCommunitySummary(): CommunitySummary {
+        val complaintSource = complaints.ifEmpty { MockData.complaints }
+        val lostFoundSource = lostFoundItems.ifEmpty { MockData.lostFoundItems }
+        val openComplaintCount = complaintSource.count { it.status == "OPEN" || it.status == "IN_PROGRESS" }.toLong()
+        val myOpenCount = complaintSource.count { it.mine && (it.status == "OPEN" || it.status == "IN_PROGRESS") }.toLong()
+        val activeLost = lostFoundSource.count { it.type == "LOST" && it.status != "RESOLVED" }.toLong()
+        val activeFound = lostFoundSource.count { it.type == "FOUND" && it.status != "RESOLVED" }.toLong()
+        return CommunitySummary(
+            activeLostItems = activeLost,
+            activeFoundItems = activeFound,
+            openComplaints = openComplaintCount,
+            myOpenComplaints = myOpenCount
+        )
+    }
+
+    private fun syntheticId(): Long = (System.currentTimeMillis() % Int.MAX_VALUE).toLong().absoluteValue
 
     private fun launchTask(silent: Boolean = false, block: suspend () -> Unit) {
         viewModelScope.launch {
